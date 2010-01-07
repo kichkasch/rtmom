@@ -1,0 +1,9 @@
+README for rtmom
+
+rtmom is a Elementary based client for "Remember the Milk" (http://www.rememberthemilk.com/) written in Python. 
+
+First sources of information are:
+* http://freshmeat.net/users/kichkasch (Home Page)
+* http://github.com/kichkasch/rtmom (Source Code and documentation)
+
+Please browse the wiki there to find more information about the usage and the development of rtmom.
