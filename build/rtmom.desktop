@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=rtmom
+Comment=Elementary based client for Remember the Milk written in Python.
+Version=0.1
+Type=Application
+Exec=rtmom
+Terminal=false
+Categories=PIM
+X-MB-SingleInstance=true
+Icon=rtmom

@@ -1,0 +1,21 @@
+## This is an example configuration for rtmom
+##
+## Apply your settings and place this file to ~/.rtmom/conf
+##
+##
+## See http://wiki.github.com/kichkasch/rtmom/end-user for more details.
+##
+
+
+
+##########
+## Profile for rtmom
+##
+## <group_filter> indicates, which groups to pull and display (comma seperated names, empty for *all*)
+## <task_filter> describes the filter to apply to tasks (String, see http://www.rememberthemilk.com/help/answers/search/advanced.rtm for details)
+##
+[rtmomprofile]
+group_filter=
+#group_filter="private"
+task_filter=
+#task_filter=dueWithin:"1 week of today"  	# e.g. Tasks due within one week.
