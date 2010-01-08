@@ -28,7 +28,7 @@ dist:	clean
 	mkdir build/template/CONTROL
 	cp build/control build/template/CONTROL
 	mkdir -p build/template/opt/rtmom
-	cp *.py COPYING README build/template/opt/pisi
+	cp *.py COPYING README build/template/opt/rtmom
 	mkdir build/template/bin
 	ln -s /opt/rtmom/rtmom.py build/template/bin/rtmom
 	mkdir -p build/template/home/root/.rtmom
