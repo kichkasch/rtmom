@@ -9,3 +9,4 @@ OE: rtmom
 Homepage: http://freshmeat.net/projects/rtmom
 Tags: group::pim
 Depends: python-core, pyrtm, python-elementary
+Source: http://www.tar.gz

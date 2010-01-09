@@ -2,3 +2,7 @@ rtmom.e4p
 .eric4project
 *.pyc
 token
+apidoc*
+*ipk
+*tar.gz
+*deb
