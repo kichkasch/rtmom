@@ -22,12 +22,16 @@ along with rtmom.  If not, see <http://www.gnu.org/licenses/>.
 
 # These values will be loaded from config file later on
 show_completed = False
+hidden_goups = ['Inbox', 'Sent']
 
 
-
-"""These two are application specific rather than user specific - do not touch them"""
 api_key = "afa4ce19b3ec31058c593fbca19ab636"
+"""Key from RTM to use with this app (not the user)"""
 shared_secret = "d6302c3f33fcd4cf"
+"""Key from RTM to use with this app (not the user)"""
 
+TOKEN_PATH = "/home/root/.rtmom/token"
+"""The path where rtmom will store the user token when running for the first time; the token will then be loaded with every later use"""
 
-TOKEN_PATH = "~/.rtmom/token"
+CACHE_PATH = "/home/root/.rtmom/cache"
+"""Allow for offline mode - all data is cached in this file until user manually asks for an update"""

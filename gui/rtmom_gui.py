@@ -1,5 +1,5 @@
 """
-Main module for GUI of rtmom
+GUI of rtmom
 
 Elementary based client for "Remember the Milk" (http://www.rememberthemilk.com/) written in Python. 
 
@@ -19,28 +19,50 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with rtmom.  If not, see <http://www.gnu.org/licenses/>.
 """
-import ecore, elementary    # , evas
+import ecore, elementary
 import rtmom
+import rtmom_fs
+import rtmom_net
 
 class MainWindow:
-
+    """
+    Base Window
+    """
+    
     def destroy(self, obj, *args, **kargs):
+        """
+        Close down elementary
+        """
         elementary.exit()
 
-    def _initToolbar(self, mainbox):
-        toolbar = elementary.Toolbar(mainbox)
-        toolbar.size_hint_align_set(-1.0, 0)
-        mainbox.pack_end(toolbar)
-        toolbar.show()
-        self.toolbar_items = []
-        for i in rtmom.getCategories(self._connection):
-            icon = None
-            self.toolbar_items.append(toolbar.item_add(icon, i, self._toolbarCallback))
-#        self.toolbar_items[0].select()
+    def _initDropdownBar(self, mainbox):
+        frame_cats = elementary.Frame(mainbox)
+        frame_cats.label_set("Choose Category")
+        frame_cats.size_hint_align_set(-1, -1)
+        mainbox.pack_end(frame_cats)
+        frame_cats.show()
+
+        box_cats = elementary.Box(mainbox)
+        frame_cats.content_set(box_cats)
+        box_cats.show()
+
+        self.hs_cat = elementary.Hoversel(mainbox)
+        self.hs_cat.hover_parent_set(mainbox)
+        self.hs_cat.scale_set(1)
+        self.hs_cat.size_hint_align_set(-1.0, 0.0)
+        box_cats.pack_end(self.hs_cat)
+        self.hs_cat.show()
+
+        for i in self._myrtmom.getCategories():
+            self.hs_cat.item_add(i, '',  elementary.ELM_ICON_NONE, self._toolbarCallback, i)
+        
 
     def _initContent(self, mainbox):
+        """
+        Create content area of base window
+        """
         scroller = elementary.Scroller(mainbox)
-        scroller.bounce_set(0, 0)
+        scroller.bounce_set(True, True)
         scroller.size_hint_weight_set(1.0, 1.0)
         scroller.size_hint_align_set(-1.0, -1.0)
         mainbox.pack_end(scroller)
@@ -59,6 +81,9 @@ class MainWindow:
         
 
     def _initButtons(self, mainbox):
+        """
+        Create button wigdets in buttom of base window
+        """
         box_btns = elementary.Box(mainbox)
         box_btns.horizontal_set(True)
         box_btns.homogenous_set(True)
@@ -86,7 +111,7 @@ class MainWindow:
         btn_update.label_set('Update')
         btn_update.size_hint_weight_set(1, 0)
         btn_update.size_hint_align_set(-1, 0)
-#        btn_details.callback_clicked_add(self.main.show_about_page)
+        btn_update.callback_clicked_add(self._btnUpdateCallback)
         box_btns.pack_end(btn_update)
         btn_update.show()
 
@@ -99,14 +124,29 @@ class MainWindow:
         btn_quit.show()
         
         
-    def __init__(self, connection):
-        self._connection = connection
+    def __init__(self):
+        """
+        Initialize base window
+        
+        Data is attempted to load from cache (local file); if this fails, attempts it made to load from the net.
+        """
+        self._myrtmom = rtmom.RTMOM()
+        self._fileHandler = rtmom_fs.FileHandler()
+        try:
+            self._myrtmom.doLoadFromFile(self._fileHandler)
+        except:
+            # Fine - this is our very first run; but now we direct connection to RTM
+            print "Error when loading from cache ... trying direct pull from Internet"
+            netConnector = rtmom_net.getInternetConnector()
+            if not netConnector.isConnected():
+                netConnector.connect(tokenCallback = None)
+            self._myrtmom.updateFromNet(netConnector)
+            self._myrtmom.doSaveToFile(self._fileHandler)
         
         self.win = elementary.Window("rtmom", elementary.ELM_WIN_BASIC)
         self.win.title_set(("rtmom"))
         self.win.callback_destroy_add(self.destroy)
 
-        #add background to main window
         bg = elementary.Background(self.win)
         self.win.resize_object_add(bg)
         bg.size_hint_weight_set(1.0, 1.0)
@@ -119,18 +159,20 @@ class MainWindow:
         mainbox.show()
         self._mainbox = mainbox
 
-        self._initToolbar(mainbox)
+        self._initDropdownBar(mainbox)
         self._initContent(mainbox)
         self._initButtons(mainbox)
         self.win.show()
         
-        self.toolbar_items[0].select()        
-#        self._updateList(rtmom.getCategories(self._connection)[0])
-
+        self.hs_cat.label_set(self._myrtmom.getCategories()[0])
+        self._updateList(self._myrtmom.getCategories()[0])
 
     def _updateList(self, category = None, filter = ""):
+        """
+        Clears the list widget and populates new entries from category in parameter
+        """
         self.list.clear()
-        for task in rtmom.getTasks(self._connection, category, filter):
+        for task in self._myrtmom.getTasks(category):
             label = elementary.Label(self._mainbox)
             label.scale_set(1)
             label.label_set('%s' % task)
@@ -139,20 +181,33 @@ class MainWindow:
         
 # EVENTS
     def _toolbarCallback(self, *args):
-        toolbar, entry = args
-        index = self.toolbar_items.index(entry)
-        print ("Selected category: %s" %(rtmom.getCategories(self._connection)[index]))
-        self._updateList(rtmom.getCategories(self._connection)[index])
+        """
+        Event Handler for any selection made in the toolbar
+        """
+        x,  y, entry = args
+        self.hs_cat.label_set(entry)
+        print ("Selected category: %s" %(entry))
+        self._updateList(entry)
 
-def getConnection():
-    """
-    Todo: Implement gui based dialog here
-    """
-    return rtmom.getConnection()
+    def _btnUpdateCallback(self, *args):
+        """
+        Event handler for button 'update'
+        
+        Initiates a pull of information from the net in the backend.
+        """
+        netConnector = rtmom_net.getInternetConnector()
+        if not netConnector.isConnected():
+            netConnector.connect(tokenCallback = None)
+        self._myrtmom.updateFromNet(netConnector)
+        self._myrtmom.doSaveToFile(self._fileHandler)
+        self._updateList(self.hs_cat.label_get())
+
 
 def initAndRun():
-    conn = getConnection()
+    """
+    start up gui
+    """
     elementary.init()
-    MainWindow(conn)
+    MainWindow()
     elementary.run()
     elementary.shutdown()

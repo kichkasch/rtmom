@@ -24,103 +24,72 @@ along with rtmom.  If not, see <http://www.gnu.org/licenses/>.
 
 import config
 import rtm
-categoryMapping = None
-"""Maps names of Categories (lists) for tasks to their corresponding IDs"""
 
-def getCategories(rtm):
-    global categoryMapping
-    categoryMapping = {}
-    rspLists = rtm.lists.getList()
-    for cat in rspLists.lists.list:
-        categoryMapping[cat.name] = cat.id
-    return categoryMapping.keys()
-
-def _assembleFilter(filter):
-    if not config.show_completed:
-        if filter:
-            filter = "(" + filter + ") AND " + "status:incomplete"
-        else:
-            filter = "status:incomplete"
-    return filter
-
-def _extractTasksFromDottedDict(taskList):
-    tasks = []
-    if not isinstance(taskList, (list, tuple)):
-        for t in taskList.taskseries:
-            tasks.append(t)
-    else:
-        for l in taskList:      
-            # XXX: taskseries *may* be a list 
-            if isinstance(l.taskseries, (list, tuple)):
-                for t in l.taskseries:
-                    tasks.append(t)
-            else:
-                tasks.append(l.taskseries)
-    return tasks
-            
-def getFullTasks(rtm, cat = None, filter = ""):
-    global categoryMapping
-    filter = _assembleFilter(filter)
-    if cat and categoryMapping:
-        rspTasks = rtm.tasks.getList(list_id = categoryMapping[cat],  filter = filter)
-    else:
-        rspTasks = rtm.tasks.getList(filter = filter)
-    return _extractTasksFromDottedDict(rspTasks.tasks.list)
+class RTMOM():
+    """
+    Local data management for rtmom
     
-def getTasks(rtm, cat = None, filter = ""):
+    @ivar _categories: Maps names of Categories (lists) for tasks to their corresponding IDs
+    @ivar _tasks: Holds information about all tasks in memory
     """
-    Returns names of tasks
-    """
-    taskNames = []
-    for task in getFullTasks(rtm, cat, filter):
-        taskNames.append(task.name)
-    return taskNames
+    def __init__(self):
+        """
+        Constructor - empy initialize categories and tasks
+        """
+        self._categories = None
+        self._tasks = None
 
-
-def getConnection():
-    """
-    Estabilshes connection with Remember The Milk backend
+    def getCategories(self):
+        """
+        Return categories in memory
+        """
+        return sorted(self._categories.keys())
+        
+    def getFullTasks(self, category):
+        """
+        Return tasks in memory
+        """        
+        return self._tasks[category]
     
-    Checks, whether token is known already; otherwise user interaction; finally connection
-    """
-    token = None
-    try:
-        f = open(config.TOKEN_PATH, 'r')
-        token = f.read().strip()
-        f.close()
-    except:
-        token = None
-    conn = rtm.RTM(config.api_key, config.shared_secret, token)
-    if not token :
-        print 'No token found'
-        print 'Give me access here:', conn.getAuthURL()
-        raw_input('Press enter once you gave access')
-        f = open(config.TOKEN_PATH, "w")
-        f.write(conn.getToken())
-        f.close()
+    def getTasks(self, cat):
+        """
+        Returns names of tasks in memory
+        """
+        taskNames = []
+        for task in self.getFullTasks(cat):
+            taskNames.append(task.name)
+        return taskNames
 
-    return conn
+    def doLoadFromFile(self, fileHandler):
+        """
+        Populate local lists with content from local file
+        """
+        print "--- Loading from local cache"
+        self._tasks, self._categories = fileHandler.loadFromFile()
+        print "\t Sucess"
+        
+    def doSaveToFile(self, fileHandler):
+        """
+        Write all information from local lists (memory) to local file
+        """
+        print "--- Saving to local cache"
+        fileHandler.saveToFile(self._tasks, self._categories)
+        print "\t Sucess"
 
-
-def printTasks(rtm):
-    """
-    Command line output of all tasksk for testing purposes
-    """
-#    for task in getTasks(rtm):
-    for task in getTasks(rtm, "Privat"):
-        print task
-
-def printCategories(rtm):
-    for cat in getCategories(rtm):
-        print cat
-
+    def updateFromNet(self, netHandler):
+        """
+        Populate local lists (memory) with content from RTM service in the Internet
+        """
+        print "--- Updating from Net"
+        self._categories = netHandler.loadCategories()
+        self._tasks = {}
+        for name, id in self._categories.items():
+            self._tasks[name] = netHandler.loadFullTasks(id)
+        print "\t Sucess"
+        
 """
 This starts rtmom
 """
 if __name__ == '__main__':
-#    c = getConnection()
-#    printCategories(c)
-#    print "\n\n"
-#    printTasks(c)
     import gui.rtmom_gui
     gui.rtmom_gui.initAndRun()
