@@ -76,7 +76,7 @@ class RTMOM():
         """
         print "--- Loading from local cache"
         self._tasks, self._categories = fileHandler.loadFromFile()
-        print "\t Sucess"
+        print "\t Success"
         
     def doSaveToFile(self, fileHandler):
         """
@@ -84,7 +84,7 @@ class RTMOM():
         """
         print "--- Saving to local cache"
         fileHandler.saveToFile(self._tasks, self._categories)
-        print "\t Sucess"
+        print "\t Success"
 
     def updateFromNet(self, netHandler):
         """
@@ -95,8 +95,17 @@ class RTMOM():
         self._tasks = {}
         for name, id in self._categories.items():
             self._tasks[name] = netHandler.loadFullTasks(id)
-        print "\t Sucess"
-       
+        print "\t Success"
+        
+    def markTaskComplete(self, netHandler, catName, fullTask):
+        """
+        Mark a single task completed
+        """
+        print "--- Marking one task complete"
+        catId = self._categories[catName]
+        netHandler.markTaskCompleted(catId, fullTask)
+        print "\t Success"
+
 extractor = None
 def getExtractor():
     """
@@ -115,6 +124,9 @@ class InformationExtractor():
         pass
         
     def extractTags(self, task, delimiter = ", "):
+        """
+        Parse dotted dict structure for tag information and assemble a string from it
+        """
         ret = ""
         if not isinstance(task.tags, list): # no tag at all
             if  isinstance(task.tags.tag, list):
@@ -124,8 +136,39 @@ class InformationExtractor():
             else:
                ret += task.tags.tag 
         return ret
+    
+    def extractTaskSeriesFromDottedDict(self, taskseries):
+        """
+        Parse dotted dict structure of taskseries and return flat list of tasks
+        """
+        tasks = []
+        if isinstance(taskseries, (list, tuple)):
+            for t in taskseries:
+                tasks.append(t)
+        else:
+            tasks.append(taskseries)
+        return tasks
+                
+    def extractTasksFromDottedDict(self, taskList):
+        """
+        Resolves the 'funny' structure of so-called DottedDict for tasks
+        """
+        tasks = []
+        if not isinstance(taskList, (list, tuple)):
+            ret = self.extractTaskSeriesFromDottedDict(taskList.taskseries)
+            tasks.extend(ret)
+        else:
+            for l in taskList:      
+                ret = self.extractTaskSeriesFromDottedDict(l.taskseries)
+                tasks.extend(ret)
+        return tasks        
         
     def replaceCharactersBefore(self, string, maxLen = 0):
+        """
+        If a string shall be diplayed in Elementary on a label / text field some characters make it ugly; use this function to replace a pre-defined set of those
+        
+        If you provide a maxLen this function will also trunc your string (and put a tripple dot at the end)
+        """
         ret = str(string)
         ret = ret.replace('<', '(')
         ret = ret.replace('>', ')')     
@@ -136,11 +179,19 @@ class InformationExtractor():
         return ret
         
     def replaceCharactersAfter(self, string):
+        """
+        Ones your string is ready for displaying call this function again for formatting issues
+        
+        Line break etc.
+        """
         ret = str(string)
         ret = ret.replace('\n', '<br>')
         return ret
         
     def formatNote(self, note):
+        """
+        Retrieves note information from a task and assembles the corresponding string for a text field
+        """
         ret = """<b>""" + self.replaceCharactersBefore(note.title)+ """</>\n""" + self.replaceCharactersBefore(getattr(note,'$t'))   # the note content is hidden in the XML content (here $t)
         return self.replaceCharactersAfter(ret)
         

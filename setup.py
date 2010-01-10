@@ -46,7 +46,7 @@ def doBuild(path):
 
 def doInstall(path):
     print "installing rtmom"
-    basedir = os.path.join(path, 'opt/rtmom')
+    basedir = os.path.join(path, 'opt/rtmom')   
     if not os.path.exists(os.path.join(path, 'opt/')):
         os.mkdir(os.path.join(path, 'opt/'))
     shutil.copytree(os.getcwdu(), basedir)

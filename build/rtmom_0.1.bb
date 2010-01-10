@@ -10,7 +10,7 @@ PACKAGE_ARCH = "all"
 
 PR = "r0"
 
-SRC_URI = "???"
+SRC_URI = "http://cloud.github.com/downloads/kichkasch/rtmom/rtmom-src-0.1.tar.gz"
 
 FILES_${PN} += "/opt/rtmom \
                 ${datadir}/pixmaps \

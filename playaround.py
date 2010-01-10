@@ -20,4 +20,4 @@ if __name__ == '__main__':
     print "\tCat: " + cat
     print "\tTasks: " + task.name
         
-    net.markTaskCompleted(cats[cat], task.id)
+    net.markTaskCompleted(cats[cat], task)

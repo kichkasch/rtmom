@@ -209,9 +209,28 @@ class RTMOMPage(object):
             fullTask = self._listMapping[item]
             a= DetailDialog(self.main, fullTask)
             a.promote()
+        elif action == "1completed":
+            self.doCompleteTask()
         elif action == "9about":
             a = AboutDialog(self.main)
             a.promote()
+            
+    def doCompleteTask(self, catName = None, fullTask = None):
+        """
+        Really doing the stuff for the action handler; allows for re-use when calling from outside (tasks details page)
+        """
+        if not catName:
+            catName = self.hs_cat.label_get()
+        if not fullTask:
+            item = self.list.selected_item_get()
+            fullTask = self._listMapping[item]
+        netConnector = rtmom_net.getInternetConnector()
+        if not netConnector.isConnected():
+            netConnector.connect()
+        self._myrtmom.markTaskComplete(netConnector, catName, fullTask)
+        self._myrtmom.updateFromNet(netConnector)
+        self._myrtmom.doSaveToFile(self._fileHandler)
+        self._updateList(catName)
 
 class MainWindow:
     """

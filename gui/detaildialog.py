@@ -29,6 +29,7 @@ class DetailDialog(object):
     """
     def __init__(self, main, task):
         self.main = main
+        self._fullTask = task
         self.box = elementary.Box(self.main.win)
         self.box.size_hint_align_set(-1, -1)
         self.box.show()
@@ -107,7 +108,7 @@ class DetailDialog(object):
         btn_completed.label_set('Mark Completed')
         btn_completed.size_hint_weight_set(1, 0)
         btn_completed.size_hint_align_set(-1, 0)
-# btn_light.callback_clicked_add(self.main.show_light_page)
+        btn_completed.callback_clicked_add(self.callbackCompleted)
         box_btns.pack_end(btn_completed)
         btn_completed.show()
         
@@ -132,5 +133,12 @@ class DetailDialog(object):
         """
         Promote application page
         """
+        self.main.rtmom_page.promote()
+        
+    def callbackCompleted(self, *args):
+        """
+        Promote application page
+        """
+        self.main.rtmom_page.doCompleteTask(fullTask = self._fullTask)
         self.main.rtmom_page.promote()
         

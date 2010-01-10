@@ -23,6 +23,7 @@ along with rtmom.  If not, see <http://www.gnu.org/licenses/>.
 import config
 import rtm
 import datetime
+import rtmom
 
 internetConnector = None
 """Singleton"""
@@ -83,25 +84,6 @@ class InternetConnector():
                 filter = "status:incomplete"
         return filter
 
-    def _extractTasksFromDottedDict(self, taskList):
-        """
-        Resolves the 'funny' structure of so-called DottedDict
-        """
-        tasks = []
-        if not isinstance(taskList, (list, tuple)):
-            if isinstance(taskList.taskseries, (list, tuple)):
-                for t in taskList.taskseries:
-                    tasks.append(t)
-            else:
-                tasks.append(taskList.taskseries)
-        else:
-            for l in taskList:      
-                if isinstance(l.taskseries, (list, tuple)):
-                    for t in l.taskseries:
-                        tasks.append(t)
-                else:
-                    tasks.append(l.taskseries)
-        return tasks
 
     def loadFullTasks(self, catid = None, filter = ""):
         """
@@ -116,14 +98,17 @@ class InternetConnector():
             rspTasks = self._connection.tasks.getList(list_id = catid,  filter = filter)
         else:
             rspTasks = self._connection.tasks.getList(filter = filter)
-        return self._extractTasksFromDottedDict(rspTasks.tasks.list)
+        return rtmom.getExtractor().extractTasksFromDottedDict(rspTasks.tasks.list)
 
-    def markTaskCompleted(self, catId, taskId):
+    def markTaskCompleted(self, catId, task):
+        """
+        Mark a single task completed
+        """
         if not self.isConnected():
             raise ValueError('Not connected with RTM Net Service; cannot proceed. Please connect first.')
         
         tl = self._connection.timelines.create().timeline
-        rspTasks = self._connection.tasks.complete(list_id =catId, task_id = taskId, timeline = tl, taskseries_id = taskId)
+        rspTasks = self._connection.tasks.complete(list_id =catId, task_id = task.task.id, timeline = tl, taskseries_id = task.id)
         
 
     def connect(self, tokenPath = None):
