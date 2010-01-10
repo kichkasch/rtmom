@@ -51,6 +51,16 @@ class RTMOM():
         """        
         return self._tasks[category]
     
+    def getFullTaskFromName(self, taskName):
+        """
+        Searches for the full task using the task name
+        """
+        for cat in self.getCategories():
+            for fullTask in self.getFullTasks(cat):
+                if fullTask.name == taskName:
+                    return fullTask
+        raise ValueError('Task with given name could not be found.')
+    
     def getTasks(self, cat):
         """
         Returns names of tasks in memory

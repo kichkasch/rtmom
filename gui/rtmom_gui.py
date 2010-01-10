@@ -19,34 +19,37 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with rtmom.  If not, see <http://www.gnu.org/licenses/>.
 """
+
+ACTIONS = {"1completed": "Mark Selected Task Completed", "0details": "Show Task Details", "8update": "Update tasks from net", "9about":"About rtmom"}
+"""ACTIONS for Event Handlers; numbers indicating the order they do appear in the action drop down"""
+
 import ecore, elementary
 import rtmom
 import rtmom_fs
 import rtmom_net
+from gui.aboutdialog import AboutDialog
+from gui.detaildialog import DetailDialog
 
-class MainWindow:
+class RTMOMPage(object):
     """
-    Base Window
+    App page
     """
-    
-    def destroy(self, obj, *args, **kargs):
-        """
-        Close down elementary
-        """
-        elementary.exit()
 
     def _initDropdownBar(self, mainbox):
-        frame_cats = elementary.Frame(mainbox)
+        """
+        Set up a drop down list for available categories (task lists)
+        """
+        frame_cats = elementary.Frame(self.main.win)
         frame_cats.label_set("Choose Category")
         frame_cats.size_hint_align_set(-1, -1)
         mainbox.pack_end(frame_cats)
         frame_cats.show()
 
-        box_cats = elementary.Box(mainbox)
+        box_cats = elementary.Box(self.main.win)
         frame_cats.content_set(box_cats)
         box_cats.show()
 
-        self.hs_cat = elementary.Hoversel(mainbox)
+        self.hs_cat = elementary.Hoversel(self.main.win)
         self.hs_cat.hover_parent_set(mainbox)
         self.hs_cat.scale_set(1)
         self.hs_cat.size_hint_align_set(-1.0, 0.0)
@@ -61,75 +64,69 @@ class MainWindow:
         """
         Create content area of base window
         """
-        scroller = elementary.Scroller(mainbox)
+        scroller = elementary.Scroller(self.main.win)
         scroller.bounce_set(True, True)
         scroller.size_hint_weight_set(1.0, 1.0)
         scroller.size_hint_align_set(-1.0, -1.0)
         mainbox.pack_end(scroller)
         scroller.show()        
 
-        contentBox = elementary.Box(mainbox)
+        contentBox = elementary.Box(self.main.win)
         contentBox.size_hint_weight_set(1.0, -1.0)
         scroller.content_set(contentBox)
         contentBox.show()
         
-        self.list = elementary.List(mainbox)
+        self.list = elementary.List(self.main.win)
         self.list.size_hint_weight_set(1.0, 1.0)
         self.list.size_hint_align_set(-1.0, -1.0)
         contentBox.pack_end(self.list)
         self.list.show()
         
+    def _initActionsDropdown(self, mainbox, buttonBox):
+        """
+        Drop down list for actions in the bottom of main page (wouldn't fit if realized as buttons)
+        """
+        self.hs_actions = elementary.Hoversel(self.main.win)
+        self.hs_actions.hover_parent_set(mainbox)
+        self.hs_actions.scale_set(1)
+        self.hs_actions.size_hint_weight_set(10, 0)
+        self.hs_actions.size_hint_align_set(-1.0, 0.0)
+        buttonBox.pack_end(self.hs_actions)
+        self.hs_actions.show()
+
+        for key in sorted(ACTIONS.keys()):
+            label = ACTIONS[key]
+            self.hs_actions.item_add(label, '',  elementary.ELM_ICON_NONE, self._actionsCallback, key)
+        self.hs_actions.label_set('Actions...')
 
     def _initButtons(self, mainbox):
         """
         Create button wigdets in buttom of base window
         """
-        box_btns = elementary.Box(mainbox)
+        box_btns = elementary.Box(self.main.win)
         box_btns.horizontal_set(True)
-        box_btns.homogenous_set(True)
+        box_btns.homogenous_set(False)
         box_btns.size_hint_align_set(-1.0, 0)
         mainbox.pack_end(box_btns)
         box_btns.show()
 
-        btn_completed = elementary.Button(mainbox)
-        btn_completed.label_set('Completed')
-        btn_completed.size_hint_weight_set(1, 0)
-        btn_completed.size_hint_align_set(-1, 0)
-#        btn_light.callback_clicked_add(self.main.show_light_page)
-        box_btns.pack_end(btn_completed)
-        btn_completed.show()
-
-        btn_details = elementary.Button(mainbox)
-        btn_details.label_set('Details')
-        btn_details.size_hint_weight_set(1, 0)
-        btn_details.size_hint_align_set(-1, 0)
-#        btn_details.callback_clicked_add(self.main.show_about_page)
-        box_btns.pack_end(btn_details)
-        btn_details.show()
-
-        btn_update = elementary.Button(mainbox)
-        btn_update.label_set('Update')
-        btn_update.size_hint_weight_set(1, 0)
-        btn_update.size_hint_align_set(-1, 0)
-        btn_update.callback_clicked_add(self._btnUpdateCallback)
-        box_btns.pack_end(btn_update)
-        btn_update.show()
+        dropDown = self._initActionsDropdown(mainbox, box_btns)
 
         btn_quit = elementary.Button(mainbox)
-        btn_quit._callback_add('clicked', self.destroy)
+        btn_quit._callback_add('clicked', self.main.destroy)
         btn_quit.label_set(("Quit"))
-        btn_quit.size_hint_weight_set(1, 0)
+        btn_quit.size_hint_weight_set(-1, 0)
         btn_quit.size_hint_align_set(-1, 0)        
         box_btns.pack_end(btn_quit)
         btn_quit.show()
-        
-        
-    def __init__(self):
+
+    def __init__(self, main):
         """
-        Initialize base window
+        Initialize app page
         
         Data is attempted to load from cache (local file); if this fails, attempts it made to load from the net.
         """
+        self.main = main
         self._myrtmom = rtmom.RTMOM()
         self._fileHandler = rtmom_fs.FileHandler()
         try:
@@ -139,33 +136,30 @@ class MainWindow:
             print "Error when loading from cache ... trying direct pull from Internet"
             netConnector = rtmom_net.getInternetConnector()
             if not netConnector.isConnected():
-                netConnector.connect(tokenCallback = None)
+                netConnector.connect()
             self._myrtmom.updateFromNet(netConnector)
             self._myrtmom.doSaveToFile(self._fileHandler)
         
-        self.win = elementary.Window("rtmom", elementary.ELM_WIN_BASIC)
-        self.win.title_set(("rtmom"))
-        self.win.callback_destroy_add(self.destroy)
-
-        bg = elementary.Background(self.win)
-        self.win.resize_object_add(bg)
-        bg.size_hint_weight_set(1.0, 1.0)
-        bg.size_hint_min_set(200,300)
-        bg.show()
-
-        mainbox = elementary.Box(self.win)
-        mainbox.size_hint_weight_set(1.0, 1.0)
-        self.win.resize_object_add(mainbox)
+        mainbox = elementary.Box(self.main.win)
+        mainbox.size_hint_weight_set(-1.0, -1.0)
         mainbox.show()
         self._mainbox = mainbox
 
-        self._initDropdownBar(mainbox)
-        self._initContent(mainbox)
-        self._initButtons(mainbox)
-        self.win.show()
+        self._initDropdownBar(self._mainbox)
+        self._initContent(self._mainbox)
+        self._initButtons(self._mainbox)
+
+        self.main.pager.content_push(self._mainbox)
         
         self.hs_cat.label_set(self._myrtmom.getCategories()[0])
         self._updateList(self._myrtmom.getCategories()[0])
+
+    def promote(self):
+        """
+        Bring myself to front
+        """
+        self.main.pager.content_promote(self._mainbox)
+
 
     def _updateList(self, category = None, filter = ""):
         """
@@ -189,18 +183,63 @@ class MainWindow:
         print ("Selected category: %s" %(entry))
         self._updateList(entry)
 
-    def _btnUpdateCallback(self, *args):
+    def _actionsCallback(self, *args):
         """
-        Event handler for button 'update'
+        Event handler for the drop down list for actions
+        """
+        x, y, action = args
+        print ("Action: %s" %(action))
+        if action == '8update':
+            netConnector = rtmom_net.getInternetConnector()
+            if not netConnector.isConnected():
+                netConnector.connect()
+            self._myrtmom.updateFromNet(netConnector)
+            self._myrtmom.doSaveToFile(self._fileHandler)
+            self._updateList(self.hs_cat.label_get())
+        elif action == "0details":
+            taskName = self.list.selected_item_get().label_get()
+            fullTask = self._myrtmom.getFullTaskFromName(taskName)
+            a= DetailDialog(self.main, fullTask)
+            a.promote()
+        elif action == "9about":
+            a = AboutDialog(self.main)
+            a.promote()
+
+class MainWindow:
+    """
+    Base Window
+    """
+    
+    def destroy(self, obj, *args, **kargs):
+        """
+        Close down elementary
+        """
+        elementary.exit()        
         
-        Initiates a pull of information from the net in the backend.
+    def __init__(self):
         """
-        netConnector = rtmom_net.getInternetConnector()
-        if not netConnector.isConnected():
-            netConnector.connect(tokenCallback = None)
-        self._myrtmom.updateFromNet(netConnector)
-        self._myrtmom.doSaveToFile(self._fileHandler)
-        self._updateList(self.hs_cat.label_get())
+        Set up Frame and initialize Pager with app page
+        """
+        self.win = elementary.Window("rtmom", elementary.ELM_WIN_BASIC)
+        self.win.title_set(("rtmom"))
+        self.win.callback_destroy_add(self.destroy)
+
+        bg = elementary.Background(self.win)
+        self.win.resize_object_add(bg)
+        bg.size_hint_weight_set(1.0, 1.0)
+        bg.size_hint_min_set(200,300)
+        bg.show()
+
+        self.pager = elementary.Pager(self.win)
+        self.pager.size_hint_weight_set(1.0, 1.0)
+        self.win.resize_object_add(self.pager)
+        self.pager.show()
+
+        self.rtmom_page = RTMOMPage(self)
+
+        self.win.resize(480, 640)
+        self.win.show()
+        self.rtmom_page.promote()
 
 
 def initAndRun():

@@ -22,6 +22,7 @@ along with rtmom.  If not, see <http://www.gnu.org/licenses/>.
 
 import config
 import rtm
+import time
 
 internetConnector = None
 """Singleton"""
@@ -88,8 +89,11 @@ class InternetConnector():
         """
         tasks = []
         if not isinstance(taskList, (list, tuple)):
-            for t in taskList.taskseries:
-                tasks.append(t)
+            if isinstance(taskList.taskseries, (list, tuple)):
+                for t in taskList.taskseries:
+                    tasks.append(t)
+            else:
+                tasks.append(taskList.taskseries)
         else:
             for l in taskList:      
                 # XXX: taskseries *may* be a list 
@@ -113,12 +117,9 @@ class InternetConnector():
             rspTasks = self._connection.tasks.getList(list_id = catid,  filter = filter)
         else:
             rspTasks = self._connection.tasks.getList(filter = filter)
-        try:
-            return self._extractTasksFromDottedDict(rspTasks.tasks.list)
-        except:
-            return []
+        return self._extractTasksFromDottedDict(rspTasks.tasks.list)
 
-    def connect(self, tokenPath = None, tokenCallback = None):
+    def connect(self, tokenPath = None):
         """
         Estabilshes connection with Remember The Milk backend
         
@@ -142,3 +143,4 @@ class InternetConnector():
             f.write(conn.getToken())
             f.close()
         self._connection = conn
+        

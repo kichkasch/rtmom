@@ -24,6 +24,8 @@ along with rtmom.  If not, see <http://www.gnu.org/licenses/>.
 show_completed = False
 hidden_goups = ['Inbox', 'Sent']
 
+APP_NAME = "rtmom"
+APP_VERSION = "0.1 (2010-01-09)"
 
 api_key = "afa4ce19b3ec31058c593fbca19ab636"
 """Key from RTM to use with this app (not the user)"""
