@@ -71,7 +71,7 @@ class AboutDialog(object):
         quitbt2.label_set("Close")
         quitbt2.size_hint_align_set(-1.0, 0.0)
         quitbt2.show()
-        box.pack_end(quitbt2)
+        self.box.pack_end(quitbt2)
 
         self.main.pager.content_push(self.box)
 

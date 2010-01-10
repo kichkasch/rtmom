@@ -22,7 +22,7 @@ along with rtmom.  If not, see <http://www.gnu.org/licenses/>.
 
 import config
 import rtm
-import time
+import datetime
 
 internetConnector = None
 """Singleton"""
@@ -96,7 +96,6 @@ class InternetConnector():
                 tasks.append(taskList.taskseries)
         else:
             for l in taskList:      
-                # XXX: taskseries *may* be a list 
                 if isinstance(l.taskseries, (list, tuple)):
                     for t in l.taskseries:
                         tasks.append(t)
@@ -118,6 +117,14 @@ class InternetConnector():
         else:
             rspTasks = self._connection.tasks.getList(filter = filter)
         return self._extractTasksFromDottedDict(rspTasks.tasks.list)
+
+    def markTaskCompleted(self, catId, taskId):
+        if not self.isConnected():
+            raise ValueError('Not connected with RTM Net Service; cannot proceed. Please connect first.')
+        
+        tl = self._connection.timelines.create().timeline
+        rspTasks = self._connection.tasks.complete(list_id =catId, task_id = taskId, timeline = tl, taskseries_id = taskId)
+        
 
     def connect(self, tokenPath = None):
         """

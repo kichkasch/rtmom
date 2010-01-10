@@ -21,6 +21,7 @@ along with rtmom.  If not, see <http://www.gnu.org/licenses/>.
 """
 from config import *
 import ecore, elementary
+import rtmom
 
 class DetailDialog(object):
     """
@@ -50,27 +51,19 @@ class DetailDialog(object):
         scroller.content_set(box)
         box.show()
 
-        about  = """<i>""" + task.name + """</>
+        about  = """<i>""" + rtmom.getExtractor().replaceCharactersBefore(task.name) + """</>
 
-<b>Due:</> """ + str(task.task.due) + """
-<b>Time estimate:</> """ + str(task.task.estimate) + """
-<b>Tags:</> """
-        if not isinstance(task.tags, list): # no tag at all
-            if  isinstance(task.tags.tag, list):
-                about += task.tags.tag[0]
-                for tagEntry in task.tags.tag[1:]:
-                    about += ", " + tagEntry
-            else:
-               about += task.tags.tag 
-        about += """
-<b>URL:</> """ + str(task.url) + """
+<b>Due:</> """ + rtmom.getExtractor().replaceCharactersBefore(task.task.due) + """
+<b>Time estimate:</> """ + rtmom.getExtractor().replaceCharactersBefore(task.task.estimate) + """
+<b>Tags:</> """ + rtmom.getExtractor().replaceCharactersBefore(rtmom.getExtractor().extractTags(task)) + """
+<b>URL:</> """ + rtmom.getExtractor().replaceCharactersBefore(task.url) + """
 <b>Notes:</>"""
 
         entry = elementary.Entry(self.main.win)
         entry.editable_set(False)
         entry.line_wrap_set(True)
         entry.size_hint_align_set(-1, -1)
-        entry.entry_set(about.replace('\n', '<br>'))
+        entry.entry_set(rtmom.getExtractor().replaceCharactersAfter(about))
         box.pack_end(entry)
         entry.show()
 
@@ -83,7 +76,7 @@ class DetailDialog(object):
                 notesList.append(task.notes.note)
                 
         for note in notesList:
-            about = """<b>""" + note.title + """</>\n""" + getattr(note,'$t')
+            about = rtmom.getExtractor().formatNote(note)
             frame_cats = elementary.Frame(self.main.win)
             frame_cats.label_set(note.created)
             frame_cats.size_hint_align_set(-1, -1)
@@ -98,17 +91,33 @@ class DetailDialog(object):
             entry.editable_set(False)
             entry.line_wrap_set(True)
             entry.size_hint_align_set(-1, -1)
-            entry.entry_set(about.replace('\n', '<br>'))
+            entry.entry_set(about)
             box_cats.pack_end(entry)
             entry.show()            
             
 
+        box_btns = elementary.Box(self.main.win)
+        box_btns.horizontal_set(True)
+        box_btns.homogenous_set(True)
+        box_btns.size_hint_align_set(-1.0, 0)
+        self.box.pack_end(box_btns)
+        box_btns.show()
+        
+        btn_completed = elementary.Button(self.main.win)
+        btn_completed.label_set('Mark Completed')
+        btn_completed.size_hint_weight_set(1, 0)
+        btn_completed.size_hint_align_set(-1, 0)
+# btn_light.callback_clicked_add(self.main.show_light_page)
+        box_btns.pack_end(btn_completed)
+        btn_completed.show()
+        
         quitbt2 = elementary.Button(self.main.win)
         quitbt2._callback_add('clicked', self.callbackQuit)
         quitbt2.label_set("Close")
+        quitbt2.size_hint_weight_set(1, 0)
         quitbt2.size_hint_align_set(-1.0, 0.0)
         quitbt2.show()
-        box.pack_end(quitbt2)
+        box_btns.pack_end(quitbt2)
 
         self.main.pager.content_push(self.box)
 

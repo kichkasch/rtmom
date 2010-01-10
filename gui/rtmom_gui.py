@@ -65,7 +65,7 @@ class RTMOMPage(object):
         Create content area of base window
         """
         scroller = elementary.Scroller(self.main.win)
-        scroller.bounce_set(True, True)
+        scroller.bounce_set(False, True)
         scroller.size_hint_weight_set(1.0, 1.0)
         scroller.size_hint_align_set(-1.0, -1.0)
         mainbox.pack_end(scroller)
@@ -127,6 +127,8 @@ class RTMOMPage(object):
         Data is attempted to load from cache (local file); if this fails, attempts it made to load from the net.
         """
         self.main = main
+        self._listMapping = {}
+        
         self._myrtmom = rtmom.RTMOM()
         self._fileHandler = rtmom_fs.FileHandler()
         try:
@@ -166,13 +168,19 @@ class RTMOMPage(object):
         Clears the list widget and populates new entries from category in parameter
         """
         self.list.clear()
-        for task in self._myrtmom.getTasks(category):
+        self._listMapping  = {}
+
+        for task in self._myrtmom.getFullTasks(category):
+            c = '%s<br><b>%s</>' % (
+                                                rtmom.getExtractor().replaceCharactersBefore(task.name, 40), 
+                                                rtmom.getExtractor().replaceCharactersBefore(rtmom.getExtractor().extractTags(task), 30))
             label = elementary.Label(self._mainbox)
             label.scale_set(1)
-            label.label_set('%s' % task)
-            self.list.item_append(task, label, None, None, None)
-            self.list.go()
-        
+            label.label_set(c)
+            item = self.list.item_append('', label, None, None, None)
+            self._listMapping[item] = task
+            self.list.go()            
+
 # EVENTS
     def _toolbarCallback(self, *args):
         """
@@ -197,8 +205,8 @@ class RTMOMPage(object):
             self._myrtmom.doSaveToFile(self._fileHandler)
             self._updateList(self.hs_cat.label_get())
         elif action == "0details":
-            taskName = self.list.selected_item_get().label_get()
-            fullTask = self._myrtmom.getFullTaskFromName(taskName)
+            item = self.list.selected_item_get()
+            fullTask = self._listMapping[item]
             a= DetailDialog(self.main, fullTask)
             a.promote()
         elif action == "9about":

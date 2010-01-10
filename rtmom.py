@@ -96,6 +96,54 @@ class RTMOM():
         for name, id in self._categories.items():
             self._tasks[name] = netHandler.loadFullTasks(id)
         print "\t Sucess"
+       
+extractor = None
+def getExtractor():
+    """
+    Singleton
+    """
+    global extractor
+    if not extractor:
+        extractor = InformationExtractor()
+    return extractor
+      
+class InformationExtractor():
+    """
+    Extract (and format) information coming from RTM
+    """
+    def __init__(self):
+        pass
+        
+    def extractTags(self, task, delimiter = ", "):
+        ret = ""
+        if not isinstance(task.tags, list): # no tag at all
+            if  isinstance(task.tags.tag, list):
+                ret += task.tags.tag[0]
+                for tagEntry in task.tags.tag[1:]:
+                    ret += delimiter + tagEntry
+            else:
+               ret += task.tags.tag 
+        return ret
+        
+    def replaceCharactersBefore(self, string, maxLen = 0):
+        ret = str(string)
+        ret = ret.replace('<', '(')
+        ret = ret.replace('>', ')')     
+        ret = ret.replace('\/', '/')
+        if maxLen:
+            if len(ret) > maxLen:
+                ret = ret[:maxLen-3]+"..."
+        return ret
+        
+    def replaceCharactersAfter(self, string):
+        ret = str(string)
+        ret = ret.replace('\n', '<br>')
+        return ret
+        
+    def formatNote(self, note):
+        ret = """<b>""" + self.replaceCharactersBefore(note.title)+ """</>\n""" + self.replaceCharactersBefore(getattr(note,'$t'))   # the note content is hidden in the XML content (here $t)
+        return self.replaceCharactersAfter(ret)
+        
         
 """
 This starts rtmom
