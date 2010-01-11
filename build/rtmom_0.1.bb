@@ -10,13 +10,13 @@ PACKAGE_ARCH = "all"
 
 PR = "r0"
 
-SRC_URI = "http://cloud.github.com/downloads/kichkasch/rtmom/rtmom-src-0.1.tar.gz"
+SRC_URI = "http://cloud.github.com/downloads/kichkasch/rtmom/rtmom-src-${PV}.tar.gz"
 
 FILES_${PN} += "/opt/rtmom \
                 ${datadir}/pixmaps \
                 ${datadir}/applications \
-                /home"
-CONFFILES_${PN} += "/home/root/.${PN}/conf"
+                ${datadir}/doc/rtmom"
+CONFFILES_${PN} += "/usr/share/doc/${PN}/rtmom.conf.example"
 
 do_compile() {
 	${STAGING_BINDIR_NATIVE}/python ${S}/setup.py build ${D}

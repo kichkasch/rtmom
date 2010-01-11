@@ -32,8 +32,8 @@ dist:	clean
 	cp gui/*.py build/template/opt/rtmom/gui
 	mkdir build/template/bin
 	ln -s /opt/rtmom/rtmom.py build/template/bin/rtmom
-	mkdir -p build/template/home/root/.rtmom
-	cp conf build/template/home/root/.rtmom/conf
+	mkdir -p build/template/usr/share/doc/rtmom
+	cp rtmom.conf.example build/template/usr/share/doc/rtmom/
 	mkdir -p build/template/usr/share/applications
 	cp build/rtmom.desktop build/template/usr/share/applications
 	mkdir -p build/template/usr/share/pixmaps
@@ -42,7 +42,7 @@ dist:	clean
 	rm -rf build/template
 
 sdist: clean
-	tar cf build/tmp.tar *.py gui/*.py conf COPYING README build/rtmom.desktop build/rtmom.png
+	tar cf build/tmp.tar *.py gui/*.py rtmom.conf.example COPYING README build/rtmom.desktop build/rtmom.png
 	mkdir rtmom-$(VERSION)
 	(cd rtmom-$(VERSION) && tar -xf ../build/tmp.tar)
 	rm build/tmp.tar
