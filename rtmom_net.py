@@ -24,6 +24,8 @@ import config
 import rtm
 import datetime
 import rtmom
+import os
+import os.path
 
 internetConnector = None
 """Singleton"""
@@ -131,8 +133,10 @@ class InternetConnector():
             print 'No token found'
             print 'Give me access here:', conn.getAuthURL()
             raw_input('Press enter once you gave access')
+            folder, fileName = os.path.split(tokenPath)
+            if not os.path.isdir(folder):
+                os.makedirs(folder)
             f = open(tokenPath, "w")
             f.write(conn.getToken())
             f.close()
         self._connection = conn
-        

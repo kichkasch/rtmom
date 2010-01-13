@@ -1,5 +1,5 @@
 Package: rtmom
-Version: 0.1
+Version: 0.1.1
 Description: Elementary based client for Remember the Milk written in Python.
 Section: openmoko/apps
 Priority: optional
@@ -9,4 +9,4 @@ OE: rtmom
 Homepage: http://freshmeat.net/projects/rtmom
 Tags: group::pim
 Depends: python-core, pyrtm, python-elementary
-Source: http://cloud.github.com/downloads/kichkasch/rtmom/rtmom-src-0.1.tar.gz
+Source: http://cloud.github.com/downloads/kichkasch/rtmom/rtmom-src-0.1.1.tar.gz

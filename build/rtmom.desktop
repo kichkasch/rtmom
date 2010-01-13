@@ -2,7 +2,7 @@
 Encoding=UTF-8
 Name=rtmom
 Comment=Elementary based client for Remember the Milk written in Python.
-Version=0.1
+Version=0.1.1
 Type=Application
 Exec=rtmom
 Terminal=false
