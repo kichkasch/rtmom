@@ -32,7 +32,7 @@ import os.path
 import shutil
 
 filesToMove = [
-               ['conf', 'home/root/.rtmom', 'conf'], 
+               ['rtmom.conf.example', 'usr/share/doc/rtmom', 'rtmom.conf.example'], 
                ['build/rtmom.desktop', 'usr/share/applications', 'rtmom.desktop'], 
                ['build/rtmom.png', 'usr/share/pixmaps', 'rtmom.png']
                ]

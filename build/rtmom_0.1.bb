@@ -4,7 +4,8 @@ PRIORITY = "optional"
 LICENSE = "GPL"
 HOMEPAGE = "http://freshmeat.net/projects/rtmom"
 SRCNAME = "rtmom"
-DEPENDS = "python-core pyrtm python-elementary"
+DEPENDS = "python pyrtm python-elementary"
+RDEPENDS = "python-core"
 
 PACKAGE_ARCH = "all"
 
