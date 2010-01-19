@@ -153,6 +153,9 @@ class InformationExtractor():
         """
         Resolves the 'funny' structure of so-called DottedDict for tasks
         """
+        if isinstance(taskList, list):  # indicates an empty taskList
+            return []
+        taskList = taskList.list
         tasks = []
         if not isinstance(taskList, (list, tuple)):
             ret = self.extractTaskSeriesFromDottedDict(taskList.taskseries)

@@ -11,13 +11,16 @@ if __name__ == '__main__':
     cats = net.loadCategories()
     
     t = {}
-    for cat in cats.keys():
-        t[cat] = net.loadFullTasks(cats[cat])
+    for key, cat in cats.iteritems():
+        print "Kategorie: %s, %s" %(key, cat)
+        tasks = net.loadFullTasks(cat)
+        for task in tasks:
+            print "\t%s" %(task.name)
         
-    cat = cats.keys()[0]
-    task = t[cat][0]
-    print "Marking finished: "
-    print "\tCat: " + cat
-    print "\tTasks: " + task.name
-        
-    net.markTaskCompleted(cats[cat], task)
+#    cat = cats.keys()[0]
+#    task = t[cat][0]
+#    print "Marking finished: "
+#    print "\tCat: " + cat
+#    print "\tTasks: " + task.name
+#        
+#    net.markTaskCompleted(cats[cat], task)

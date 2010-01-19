@@ -100,7 +100,7 @@ class InternetConnector():
             rspTasks = self._connection.tasks.getList(list_id = catid,  filter = filter)
         else:
             rspTasks = self._connection.tasks.getList(filter = filter)
-        return rtmom.getExtractor().extractTasksFromDottedDict(rspTasks.tasks.list)
+        return rtmom.getExtractor().extractTasksFromDottedDict(rspTasks.tasks)
 
     def markTaskCompleted(self, catId, task):
         """

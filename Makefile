@@ -3,7 +3,7 @@
 # global parameters
 TITLE=	"rtmom"
 URL=		"http://freshmeat.net/projects/rtmom"
-VERSION=	"0.1.1"
+VERSION=	"0.1.2"
 
 API_DOC_DIR=	apidoc/
 
