@@ -1,5 +1,4 @@
-        
-if __name__ == '__main__':
+def playWithConnections():
     import rtmom_net
     net = rtmom_net.getInternetConnector()
     net.connect()
@@ -24,3 +23,13 @@ if __name__ == '__main__':
 #    print "\tTasks: " + task.name
 #        
 #    net.markTaskCompleted(cats[cat], task)
+
+def playWithConfig():
+    import config
+    config.getSettings()
+    print config.getSettings().getValue("hidden_groups",  list)
+    print config.getSettings().getValue("show_completed", bool)
+
+if __name__ == '__main__':
+#    playWithConnections()
+    playWithConfig()

@@ -68,7 +68,7 @@ class InternetConnector():
         rspLists = self._connection.lists.getList()
         for cat in rspLists.lists.list:
             try:
-                config.hidden_goups.index(cat.name)
+                config.getSettings().getValue("hidden_groups",  list).index(cat.name)
             except:
                 categories[cat.name] = cat.id
         return categories
@@ -79,7 +79,7 @@ class InternetConnector():
         
         Depends on setting in config file.
         """
-        if not config.show_completed:
+        if not config.getSettings().getValue("show_completed", bool):
             if filter:
                 filter = "(" + filter + ") AND " + "status:incomplete"
             else:

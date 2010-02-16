@@ -3,7 +3,7 @@
 # global parameters
 TITLE=	"rtmom"
 URL=		"http://freshmeat.net/projects/rtmom"
-VERSION=	"0.1.3"
+VERSION=	"0.1.4"
 
 API_DOC_DIR=	apidoc/
 
@@ -48,3 +48,9 @@ sdist: clean
 	rm build/tmp.tar
 	tar czf build/rtmom-src-$(VERSION).tar.gz rtmom-$(VERSION)
 	rm -rf rtmom-$(VERSION)
+
+# you need e17 libs and python bindings, which have not yet made it into Ubuntu repos
+# check this URL for manual installation:
+# http://qa.debian.org/developer.php?login=lutin%40debian.org&set=yes&bugs=0&version=1&ubuntu=0&excuses=0&bin=1&buildd=0&problems=0&popc=0&watch=0&section=0&ordering=0&uploads=1&packages=&uploader=&mirror=http%3A%2F%2Fftp.debian.org%2Fdebian
+sdist_ubuntu: sdist
+	clear
