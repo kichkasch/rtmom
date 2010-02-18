@@ -113,7 +113,7 @@ class InternetConnector():
         rspTasks = self._connection.tasks.complete(list_id =catId, task_id = task.task.id, timeline = tl, taskseries_id = task.id)
         
 
-    def connect(self, tokenPath = None):
+    def connect(self, tokenPath = None, interactive = True):
         """
         Estabilshes connection with Remember The Milk backend
         
@@ -131,12 +131,20 @@ class InternetConnector():
         conn = rtm.RTM(config.api_key, config.shared_secret, token)
         if not token:
             print 'No token found'
+            if not interactive:
+                return conn, tokenPath
             print 'Give me access here:', conn.getAuthURL()
             raw_input('Press enter once you gave access')
-            folder, fileName = os.path.split(tokenPath)
-            if not os.path.isdir(folder):
-                os.makedirs(folder)
-            f = open(tokenPath, "w")
-            f.write(conn.getToken())
-            f.close()
+            self.connectAuthorizedClicked(conn, tokenPath)
+        else:
+            self._connection = conn
+            return None, None
+
+    def connectAuthorizedClicked(self, conn, tokenPath):
+        folder, fileName = os.path.split(tokenPath)
+        if not os.path.isdir(folder):
+            os.makedirs(folder)
+        f = open(tokenPath, "w")
+        f.write(conn.getToken())
+        f.close()
         self._connection = conn

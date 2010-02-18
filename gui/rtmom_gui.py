@@ -29,6 +29,7 @@ import rtmom_fs
 import rtmom_net
 from gui.aboutdialog import AboutDialog
 from gui.detaildialog import DetailDialog
+from gui.authorizeddialog import AuthorizedDialog
 
 class RTMOMPage(object):
     """
@@ -129,8 +130,14 @@ class RTMOMPage(object):
         self.main = main
         self._listMapping = {}
         
+        mainbox = elementary.Box(self.main.win)
+        mainbox.size_hint_weight_set(-1.0, -1.0)
+        mainbox.show()
+        self._mainbox = mainbox
+
         self._myrtmom = rtmom.RTMOM()
         self._fileHandler = rtmom_fs.FileHandler()
+
         try:
             self._myrtmom.doLoadFromFile(self._fileHandler)
         except:
@@ -138,15 +145,22 @@ class RTMOMPage(object):
             print "Error when loading from cache ... trying direct pull from Internet"
             netConnector = rtmom_net.getInternetConnector()
             if not netConnector.isConnected():
-                netConnector.connect()
-            self._myrtmom.updateFromNet(netConnector)
-            self._myrtmom.doSaveToFile(self._fileHandler)
-        
-        mainbox = elementary.Box(self.main.win)
-        mainbox.size_hint_weight_set(-1.0, -1.0)
-        mainbox.show()
-        self._mainbox = mainbox
+                self.conn, self.tokenPath = netConnector.connect(interactive = False)
+                if self.conn:   # Not none means, authorization request
+                    a = AuthorizedDialog(self.main, self, self.conn.getAuthURL())
+                    a.promote()
+                else:
+                    self._finishOffInit()
 
+    def returnFromInitialAuthorization(self):
+        rtmom_net.getInternetConnector().connectAuthorizedClicked(self.conn, self.tokenPath)
+
+        self._myrtmom.updateFromNet(netConnector)
+        self._myrtmom.doSaveToFile(self._fileHandler)    
+        self.rtmom_page.promote()
+        self._finishOffInit()
+            
+    def _finishOffInit(self):
         self._initDropdownBar(self._mainbox)
         self._initContent(self._mainbox)
         self._initButtons(self._mainbox)
@@ -155,6 +169,7 @@ class RTMOMPage(object):
         
         self.hs_cat.label_set(self._myrtmom.getCategories()[0])
         self._updateList(self._myrtmom.getCategories()[0])
+
 
     def promote(self):
         """

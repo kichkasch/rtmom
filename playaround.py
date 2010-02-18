@@ -31,5 +31,5 @@ def playWithConfig():
     print config.getSettings().getValue("show_completed", bool)
 
 if __name__ == '__main__':
-#    playWithConnections()
-    playWithConfig()
+    playWithConnections()
+#    playWithConfig()
